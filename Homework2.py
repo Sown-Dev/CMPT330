@@ -54,13 +54,23 @@ def draw2(surf):
     pygame.draw.circle(surf, width=10, radius =10, color=(25,100,0), center=(80,30))
 
     img1 = pygame.image.load("walk2.png").convert()
+    img2 = pygame.image.load("logo.png").convert()
+    img3 = pygame.image.load("walk2.png").convert()
+
     surf.blit(img1, (110, 110))
+    surf.blit(img2, (150, 210))
 
     myfont = pygame.font.Font('freesansbold.ttf', 20)
     text = myfont.render('Press Space to Switch Screens', True, (255, 255, 255))
+    text2 = myfont.render('I love pygame!!!!', True, (255, 100, 100))
+
     trect = text.get_rect()
     trect.center = (trect.w + 20, 500)
     surf.blit(text, trect)
+
+    trect2 = text2.get_rect()
+    trect2. center = (trect.w +70, 370)
+    surf.blit(text2,trect2 )
 
 
 
