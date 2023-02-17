@@ -58,16 +58,22 @@ def draw1(surf):
 
 
 def draw2(surf):
-    surf.fill((80,235,40))
+    surf.fill((0,205,20))
     pygame.draw.circle(surf, width=10, radius=10, color=(25, 100, 0), center=(80, 30))
 
-    img1 = pygame.image.load("walk2.png").convert()
-    img3 = pygame.image.load("burger.png").convert()
+    img1 = pygame.image.load("walk.png").convert()
+    img3 = pygame.image.load("tree.png").convert_alpha()
+    plains = pygame.image.load("plain.jpg").convert_alpha()
+
 
     img3 = pygame.transform.smoothscale(img3, (200, 200))
 
+    plains = pygame.transform.smoothscale(plains, (600, 500))
+    surf.blit(plains, (0,50))
     surf.blit(img3, (10, 250))
-    surf.blit(img1, (110, 110))
+    surf.blit(img3, (100, 240))
+    surf.blit(img3, (250, 300))
+    surf.blit( pygame.transform.smoothscale(img1, (500, 100)), (310, 410))
 
     myfont = pygame.font.Font('freesansbold.ttf', 20)
     text = myfont.render('Press Space to Switch Screens', True, (255, 255, 255))
