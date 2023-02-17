@@ -8,7 +8,7 @@ def main():
 
     draw1(screen)
 
-    screenT = 1;
+    screenT = 0;
     x = 5;
     y = 5;
 
@@ -58,22 +58,24 @@ def draw1(surf):
 
 
 def draw2(surf):
-    surf.fill((0,205,20))
-    pygame.draw.circle(surf, width=10, radius=10, color=(25, 100, 0), center=(80, 30))
+    surf.fill((135,206,235))
 
-    img1 = pygame.image.load("walk.png").convert()
+    img1 = pygame.image.load("moa.png").convert_alpha()
     img3 = pygame.image.load("tree.png").convert_alpha()
     plains = pygame.image.load("plain.jpg").convert_alpha()
 
 
     img3 = pygame.transform.smoothscale(img3, (200, 200))
 
-    plains = pygame.transform.smoothscale(plains, (600, 500))
+    plains = pygame.transform.smoothscale(plains, (600, 600))
     surf.blit(plains, (0,50))
     surf.blit(img3, (10, 250))
     surf.blit(img3, (100, 240))
     surf.blit(img3, (250, 300))
-    surf.blit( pygame.transform.smoothscale(img1, (500, 100)), (310, 410))
+    surf.blit(pygame.transform.smoothscale(img1, (200, 200)), (390, 310))
+
+    pygame.draw.circle(surf, radius=60, color=(250, 250, 0), center=(100, 90))
+
 
     myfont = pygame.font.Font('freesansbold.ttf', 20)
     text = myfont.render('Press Space to Switch Screens', True, (255, 255, 255))
