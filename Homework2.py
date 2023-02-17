@@ -44,7 +44,19 @@ def main():
 
 
 def draw1(surf):
-    pygame.draw.rect(surf, color=(255, 0, 0), rect=(10, 10, 140, 180))
+    surf.fill((0, 200, 230))
+
+    pygame.draw.circle(surf, radius=800, color=(50,206,5), center=(300, 1000))
+    pygame.draw.rect(surf, color=(125, 60, 50), rect=(410, 210, 140, 180))
+    pygame.draw.polygon(surf, color=(200, 100, 105), points=[(390, 210), (480, 120), (570, 210)])
+    pygame.draw.rect(surf, color=(90, 30, 40), rect=(450, 320, 50, 70))
+
+    pygame.draw.rect(surf, color=(190, 120, 120), rect=(295, 140, 10, 140))
+    pygame.draw.polygon(surf, color=(250, 00, 5), points=[(295, 140),(250, 160), (295, 180), ])
+
+
+
+    """pygame.draw.rect(surf, color=(255, 0, 0), rect=(10, 10, 140, 180))
     pygame.draw.circle(surf, width=10, radius=100, color=(0, 200, 230), center=(110, 130))
     pygame.draw.arc(surf, width=5, rect=(250, 390, 200, 100), color=(120, 250, 90), start_angle=0.8, stop_angle=6)
     pygame.draw.line(surf, width=9, start_pos=(0, 400), end_pos=(480, 20), color=(8, 250, 0))
@@ -54,7 +66,7 @@ def draw1(surf):
     text = myfont.render('Press Space to Switch Screens', True, (255, 255, 255))
     trect = text.get_rect()
     trect.center = (trect.w + 20, 520)
-    surf.blit(text, trect)
+    surf.blit(text, trect)"""
 
 
 def draw2(surf):
@@ -63,6 +75,8 @@ def draw2(surf):
     img1 = pygame.image.load("moa.png").convert_alpha()
     img3 = pygame.image.load("tree.png").convert_alpha()
     plains = pygame.image.load("plain.jpg").convert_alpha()
+    bush = pygame.image.load("bush.png").convert_alpha()
+
 
 
     img3 = pygame.transform.smoothscale(img3, (200, 200))
@@ -72,6 +86,10 @@ def draw2(surf):
     surf.blit(img3, (10, 250))
     surf.blit(img3, (100, 240))
     surf.blit(img3, (250, 300))
+    surf.blit(bush, (50, 400))
+    surf.blit(bush, (450, 450))
+
+
     surf.blit(pygame.transform.smoothscale(img1, (200, 200)), (390, 310))
 
     pygame.draw.circle(surf, radius=60, color=(250, 250, 0), center=(100, 90))
@@ -89,30 +107,32 @@ def draw2(surf):
     trect2.center = (trect.w + 70, 340)
     surf.blit(text2, trect2)
 
-
+def blur(img):
+    for i in range(1, img.get_size()[0] - 1):
+        for j in range(1, img.get_size()[1] - 1):
+            sumR = 0
+            sumG = 0
+            sumB = 0
+            for k in range(-1, 2):
+                for l in range(-1, 2):
+                    sumR += img.get_at((i + k, j + l))[0]
+                    sumG += img.get_at((i + k, j + l))[1]
+                    sumB += img.get_at((i + k, j + l))[2]
+            avgcol = (sumR / 9, sumG / 9, sumB / 9)
+            img.set_at((i, j), avgcol)
+    return img;
 def draw3(surf):
     img2 = pygame.image.load("logo.png").convert_alpha()
 
     surf.blit(img2, (150, 210))
 
     # blur
-    for i in range(1, img2.get_size()[0] - 1):
-        for j in range(1, img2.get_size()[1] - 1):
-            sumR = 0
-            sumG = 0
-            sumB = 0
-            for k in range(-1, 2):
-                for l in range(-1, 2):
-                    sumR += img2.get_at((i + k, j + l))[0]
-                    sumG += img2.get_at((i + k, j + l))[1]
-                    sumB += img2.get_at((i + k, j + l))[2]
-            avgcol = (sumR / 9, sumG / 9, sumB / 9)
-            img2.set_at((i, j), avgcol)
+    img2 = blur(img2)
 
     surf.blit(img2, (150, 360))
     myfont = pygame.font.Font('freesansbold.ttf', 30)
 
-    text3 = myfont.render('This image is blurred!!1!', True, (255, 120, 00))
+    text3 = myfont.render('This image is blurred!!!', True, (255, 120, 00))
     surf.blit(text3, (150, 480))
 
 
