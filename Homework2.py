@@ -47,11 +47,14 @@ def draw1(surf):
     surf.fill((0, 200, 230))
 
     pygame.draw.circle(surf, radius=800, color=(50,206,5), center=(300, 1000))
+    pygame.draw.arc(surf, width=5, rect=(-500, 200, 1600, 1600), color=(60, 140, 60), start_angle=0.8, stop_angle=6)
+
+
     pygame.draw.rect(surf, color=(125, 60, 50), rect=(410, 210, 140, 180))
     pygame.draw.polygon(surf, color=(200, 100, 105), points=[(390, 210), (480, 120), (570, 210)])
     pygame.draw.rect(surf, color=(90, 30, 40), rect=(450, 320, 50, 70))
 
-    pygame.draw.rect(surf, color=(190, 120, 120), rect=(295, 140, 10, 140))
+    pygame.draw.line(surf, width=5, start_pos=(295, 140), end_pos=(295, 280), color=(248, 160, 100))
     pygame.draw.polygon(surf, color=(250, 00, 5), points=[(295, 140),(250, 160), (295, 180), ])
 
     myfont = pygame.font.Font('freesansbold.ttf', 20)
