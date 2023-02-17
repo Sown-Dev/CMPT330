@@ -54,7 +54,9 @@ def draw1(surf):
     pygame.draw.rect(surf, color=(190, 120, 120), rect=(295, 140, 10, 140))
     pygame.draw.polygon(surf, color=(250, 00, 5), points=[(295, 140),(250, 160), (295, 180), ])
 
-
+    myfont = pygame.font.Font('freesansbold.ttf', 20)
+    text = myfont.render('Press Space to Switch Screens', True, (255, 255, 255))
+    surf.blit(text, (250,500))
 
     """pygame.draw.rect(surf, color=(255, 0, 0), rect=(10, 10, 140, 180))
     pygame.draw.circle(surf, width=10, radius=100, color=(0, 200, 230), center=(110, 130))
