@@ -1,6 +1,17 @@
+"""
+Homework2.py, by Misha Smirnov
+Creates a window that shows 3 different scense and can be changed by pressing space.
+The 3 scenes consist of 1 scene with different shapes making a picture, a scene using images and transformations,
+and a scene demonstrating a blur effect that I made.
+
+"""
+
+
+
 import pygame
 
 
+#Main function runs game loop and checks for inputs to switch scene and move cube. Also initializes the screen
 def main():
     pygame.init()
     screen = pygame.display.set_mode((600, 600))
@@ -42,7 +53,7 @@ def main():
                     if (screenT == 2):
                         draw3(screen)
 
-
+#draws a scene with different shapes
 def draw1(surf):
     surf.fill((0, 200, 230))
 
@@ -61,7 +72,9 @@ def draw1(surf):
     text = myfont.render('Press Space to Switch Screens', True, (255, 255, 255))
     surf.blit(text, (250,500))
 
-    """pygame.draw.rect(surf, color=(255, 0, 0), rect=(10, 10, 140, 180))
+    """
+    OLD CODE:
+    pygame.draw.rect(surf, color=(255, 0, 0), rect=(10, 10, 140, 180))
     pygame.draw.circle(surf, width=10, radius=100, color=(0, 200, 230), center=(110, 130))
     pygame.draw.arc(surf, width=5, rect=(250, 390, 200, 100), color=(120, 250, 90), start_angle=0.8, stop_angle=6)
     pygame.draw.line(surf, width=9, start_pos=(0, 400), end_pos=(480, 20), color=(8, 250, 0))
@@ -74,28 +87,29 @@ def draw1(surf):
     surf.blit(text, trect)"""
 
 
+#Draws a scene with different images
 def draw2(surf):
     surf.fill((135,206,235))
 
-    img1 = pygame.image.load("moa.png").convert_alpha()
-    img3 = pygame.image.load("tree.png").convert_alpha()
+    head = pygame.image.load("moa.png").convert_alpha()
+    tree = pygame.image.load("tree.png").convert_alpha()
     plains = pygame.image.load("plain.jpg").convert_alpha()
     bush = pygame.image.load("bush.png").convert_alpha()
 
 
 
-    img3 = pygame.transform.smoothscale(img3, (200, 200))
+    tree = pygame.transform.smoothscale(tree, (200, 200))
 
     plains = pygame.transform.smoothscale(plains, (600, 600))
     surf.blit(plains, (0,50))
-    surf.blit(img3, (10, 250))
-    surf.blit(img3, (100, 240))
-    surf.blit(img3, (250, 300))
-    surf.blit(bush, (50, 400))
+    surf.blit(tree, (10, 250))
+    surf.blit(pygame.transform.rotate(tree, angle=54), (400, 240))
+    surf.blit(tree, (250, 300))
+    surf.blit(pygame.transform.flip(bush, flip_x=True, flip_y=True), (20, 300))
     surf.blit(bush, (450, 450))
 
 
-    surf.blit(pygame.transform.smoothscale(img1, (200, 200)), (390, 310))
+    surf.blit(pygame.transform.smoothscale(head, (200, 200)), (390, 310))
 
     pygame.draw.circle(surf, radius=60, color=(250, 250, 0), center=(100, 90))
 
@@ -112,7 +126,10 @@ def draw2(surf):
     trect2.center = (trect.w + 70, 340)
     surf.blit(text2, trect2)
 
+
+#Returns a version of the input image with a blur applied
 def blur(img):
+    #iterates through image and sets color to the average of its neighbors. Doesn't effect corner layer of pixels.
     for i in range(1, img.get_size()[0] - 1):
         for j in range(1, img.get_size()[1] - 1):
             sumR = 0
@@ -126,15 +143,18 @@ def blur(img):
             avgcol = (sumR / 9, sumG / 9, sumB / 9)
             img.set_at((i, j), avgcol)
     return img;
-def draw3(surf):
-    img2 = pygame.image.load("logo.png").convert_alpha()
 
-    surf.blit(img2, (150, 210))
+
+#draws a scene with 2 of the same image demonstrating the blur effect
+def draw3(surf):
+    logo = pygame.image.load("logo.png").convert_alpha()
+
+    surf.blit(logo, (150, 210))
 
     # blur
-    img2 = blur(img2)
+    logo = blur(logo)
 
-    surf.blit(img2, (150, 360))
+    surf.blit(logo, (150, 360))
     myfont = pygame.font.Font('freesansbold.ttf', 30)
 
     text3 = myfont.render('This image is blurred!!!', True, (255, 120, 00))
