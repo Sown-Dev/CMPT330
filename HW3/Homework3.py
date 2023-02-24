@@ -14,7 +14,7 @@ class Enemy:
     health=100
     mx = 0
     my = 0
-    drag = 2
+    drag = 3
 
 
     def __init__(self, dim=24, color=(176, 82, 94)):
@@ -136,10 +136,11 @@ class Box:
         self.my = 0
 
 def game():
+    respawnTime = 70 # How often enemies spawn
+
+
     dx, dy = 8, 8  # setting speed for box movement
     big_box = Box(color=(16, 132, 194))  # creating main box object
-    small_box = Box(dim=18, color=(239, 123, 61))  # creating smaller box for intersection example
-    small_box.set_center(0.75*SCREEN_W, 0.5*SCREEN_H)  # putting smaller box in different spot
     pygame.init()
     bg = pygame.display.set_mode((SCREEN_W, SCREEN_H), pygame.SRCALPHA, 32)
     clock = pygame.time.Clock()
@@ -157,15 +158,16 @@ def game():
     shotalpha=0
     shootpos = [0,0]
     enemyList = [Enemy()]
-
+    spawnTimer=0
     while True:
         clock.tick(FPS)  # guarantees up to 30 FPS
-
+        spawnTimer+=1
         big_box.doPhysics() #do box physics before drawing box
 
 
         bg.fill((0, 0, 0))  # reset bg to black
         # checking for events
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit()
@@ -211,10 +213,7 @@ def game():
                 mouse_loc = event.pos  # update mouse position due to movement
 
         # makes the big (blue) box white while it's intersecting with the smaller (orange) box
-        if big_box.intersects_with(small_box):
-            big_box.set_color((255, 255, 255))
-        else:
-            big_box.set_color((16, 132, 194))
+
 
         # If box is "on the line" (user clicked endpt and released), then calculate movement
         if flags['on_line']:
@@ -264,22 +263,50 @@ def game():
         tempgun = pygame.transform.rotate(tempgun, -big_box.rotation);
 
 
-        bg.blit(tempgun, (big_box.x-35, big_box.y-35))
+        bg.blit(tempgun, (big_box.x-40, big_box.y-35))
         if(shotalpha>0):
             shotalpha-=1
             colora = shotalpha/6
             #create line and raycast
-            pygame.draw.line(bg, width=3,color = (240*colora,240*colora,0),start_pos=( big_box.x+40, big_box.y+25), end_pos=(shootpos[0],shootpos[1]))
-
+            pygame.draw.line(bg, width=3,color = (240*colora,240*colora,0),start_pos=big_box.get_center(), end_pos=(shootpos[0],shootpos[1]))
+            for i in enemyList:
+                i.increment_x(10)
 
         if flags['box_drag']:
             big_box.resetMomentum()
             pygame.draw.line(bg, (16, 132, 194), line_start, mouse_loc, width=2)
+
+        # ENEMY LOGIC:
+
+        #Movement:
+        for e in enemyList:
+            #get direction to player
+            v1 = pygame.math.Vector2(e.x-big_box.x, e.y-big_box.y)
+            #add momentum
+            e.increment_x(v1.x*0.2)
+            e.increment_y(v1.y*0.2)
+
+
+        # Enemy Spawn Logic
+        if spawnTimer > respawnTime:
+            enemyList.append(Enemy())
+            spawnTimer=0
+        # create enemy in random pos
+
+
+        # Drawing:
+
         score_surf = font.render(f'{text_label}: {0}', True, (230, 230, 230))
         pygame.draw.rect(bg, big_box.get_color(), big_box.get_rect_params())
-        pygame.draw.rect(bg, small_box.get_color(), small_box.get_rect_params())
         bg.blit(score_surf, (((SCREEN_W / 2) - (score_surf.get_width() / 2)), 10))  # draws text in top center of screen
+        print(spawnTimer)
+        for e in enemyList:
+            pygame.draw.rect(bg, (100,200,80), e.get_rect_params())
+
         pygame.display.update()
+
+
+
 
 
 
