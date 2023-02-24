@@ -15,7 +15,8 @@ class Enemy:
     mx = 0
     my = 0
     drag = 3
-
+    damagecooldown=8 #used to delay attacks.
+    # Doesn't start at zero so that enemies spawned on player don't immediately do damage
 
     def __init__(self, dim=24, color=(176, 82, 94)):
         self.dim = dim
@@ -136,29 +137,35 @@ class Box:
         self.my = 0
 
 def game():
-    respawnTime = 70 # How often enemies spawn
+    respawnTime = 60 # How often enemies spawn
 
 
     dx, dy = 8, 8  # setting speed for box movement
     big_box = Box(color=(16, 132, 194))  # creating main box object
     pygame.init()
     bg = pygame.display.set_mode((SCREEN_W, SCREEN_H), pygame.SRCALPHA, 32)
+    pygame.display.set_caption('Box Invasion')
     clock = pygame.time.Clock()
     flags = {'up': False, 'down': False,'left': False,'right': False, 'mouse_loc': (), 'left_click': False, 'box_drag': False,
              'line_start': (), 'line_end': (), 'on_line': False}  # creating dictionary of flags for ease of access
     #NOTE: renamed left_click to box drag, now left click is generally used if left mouse is pressed
     mouse_loc, line_start, line_end = (), (), ()  # initalizing location variables
-    text_label, text_val = 'Label', 0  # variables for scoreboard
     font = pygame.font.Font(None, 38)
 
 
     #new stuff
     gun = pygame.image.load("gunhr.png").convert_alpha()
 
+
+    maxammo=30  #used for reloading with right click
+    ammo=maxammo
+    health=100
+    score =0
     shotalpha=0
     shootpos = [0,0]
     enemyList = [Enemy()]
     spawnTimer=0
+    spawnTimer2 = respawnTime/2
     while True:
         clock.tick(FPS)  # guarantees up to 30 FPS
         spawnTimer+=1
@@ -168,6 +175,7 @@ def game():
         bg.fill((0, 0, 0))  # reset bg to black
         # checking for events
 
+        flags['left_click'] = False #reset flag
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit()
@@ -192,16 +200,18 @@ def game():
                 elif event.key == pygame.K_d:
                     flags['right'] = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # only allows mouse functionality if left-clicking and doing so inside the box
-                if event.button == 1:
+                if event.button == 3: #reload on right click
+                    ammo=maxammo
+
+                elif event.button == 1:
                     flags['left_click'] = True
-                    shotalpha=6
                     shootpos = event.pos
                     mouse_loc = event.pos  # store mouse location for line drawing (current end point)
                     if big_box.surrounds(event.pos):
                         flags['box_drag'] = True  # flag that allows for stuff that can only happen when left-clicking
                         line_start = big_box.get_center()  # store box center for line drawing (starting point)
                         flags['up'], flags['down'] = False, False  # set flags
+
             elif event.type == pygame.MOUSEBUTTONUP:
                 # only care here if left mouse button was clicked (held) previously
                 if event.button == 1 and flags['box_drag']:
@@ -262,15 +272,24 @@ def game():
         tempgun = pygame.transform.scale(gun, (120,60))
         tempgun = pygame.transform.rotate(tempgun, -big_box.rotation);
 
+        if(flags['left_click'] and ammo>0):
+            shotalpha = 6
+            ammo-=1
 
         bg.blit(tempgun, (big_box.x-40, big_box.y-35))
         if(shotalpha>0):
             shotalpha-=1
             colora = shotalpha/6
             #create line and raycast
-            pygame.draw.line(bg, width=3,color = (240*colora,240*colora,0),start_pos=big_box.get_center(), end_pos=(shootpos[0],shootpos[1]))
-            for i in enemyList:
-                i.increment_x(10)
+            lStart=big_box.get_center()
+            lEnd = (shootpos[0],shootpos[1])
+            pygame.draw.line(bg, width=3,color = (240*colora,240*colora,0),start_pos=lStart, end_pos=lEnd)
+
+            #check for collisions:
+            for e in enemyList:
+                if pygame.Rect(e.get_rect_params()).clipline( lStart, lEnd) != ():
+                    enemyList.remove(e)
+                    score+=1
 
         if flags['box_drag']:
             big_box.resetMomentum()
@@ -278,33 +297,68 @@ def game():
 
         # ENEMY LOGIC:
 
-        #Movement:
+        big_box.color = (16, 132, 194) # reset color, so that it can change if you take damage. Done before rendering
+        #Iterate through enemies
         for e in enemyList:
+
+            #Movement:
+
             #get direction to player
-            v1 = pygame.math.Vector2(e.x-big_box.x, e.y-big_box.y)
+            dir = pygame.math.Vector2(e.x-big_box.x, e.y-big_box.y).normalize()
             #add momentum
-            e.increment_x(v1.x*0.2)
-            e.increment_y(v1.y*0.2)
+            e.increment_x(dir.x*-6)
+            e.increment_y(dir.y*-6)
+
+            #Collision Detection & Damage
+
+            if(e.damagecooldown>0): #decrement cooldown if greater than 0
+                e.damagecooldown-=1
+
+            if(pygame.Rect(e.get_rect_params()).colliderect(big_box.get_rect_params()) and e.damagecooldown<1):
+                big_box.color = (255,0,0)
+                health-=10
+
+                e.damagecooldown=30
+
+
+            #Physics Step:
+            e.doPhysics()
 
 
         # Enemy Spawn Logic
         if spawnTimer > respawnTime:
             enemyList.append(Enemy())
-            spawnTimer=0
-        # create enemy in random pos
+            spawnTimer = 0
+            respawnTime -= 1  # keeps increasing difficulty over time
+        #Instead of redoing timing system, I added a second spawn timer so that multiple enemies could be spawned every frame
+        if spawnTimer2 > respawnTime:
+            enemyList.append(Enemy())
+            spawnTimer2=0
+
+
 
 
         # Drawing:
 
-        score_surf = font.render(f'{text_label}: {0}', True, (230, 230, 230))
+        score_surf = font.render(f'Score: {score}', True, (230, 230, 230))
+        health_surf = font.render(f'Health: {health}', True, (230, 230, 230))
+        ammo_surf = font.render(f'Ammo: {ammo}/{maxammo}', True, (230, 230, 230))
+
+
         pygame.draw.rect(bg, big_box.get_color(), big_box.get_rect_params())
         bg.blit(score_surf, (((SCREEN_W / 2) - (score_surf.get_width() / 2)), 10))  # draws text in top center of screen
-        print(spawnTimer)
+        bg.blit(health_surf, (((SCREEN_W / 2) - (health_surf.get_width() / 2) + health_surf.get_width()+20), 10))  # draws text in top center of screen
+        bg.blit(ammo_surf, (((SCREEN_W / 2) - (ammo_surf.get_width() / 2) - health_surf.get_width()-40), 10))  # draws text in top center of screen
+
         for e in enemyList:
             pygame.draw.rect(bg, (100,200,80), e.get_rect_params())
 
         pygame.display.update()
 
+
+        #check game over:
+        if (health <= 0):
+            pygame.quit()
 
 
 
