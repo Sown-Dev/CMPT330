@@ -1,9 +1,14 @@
-# NAME: Misha
+# NAME: Misha Smirnov
 # FILENAME: Homework3.py
 # SUMMARY:
+# I kind of redid a lot of the game. I started by adding physics based movement by having velocity and drag,
+# and by having boxes move every frame based on velocity. Then I decided to add shooting, and with that I added a gun
+# Afterwards I knew I needed enemies, so I implemented that along with damage, health, and hit detection, and to finish the project, I added reloading and burst fire
+# to satisfy the requirements
+
+
 import math
 import random
-
 import pygame
 
 SCREEN_W, SCREEN_H = 750, 450
@@ -146,17 +151,18 @@ def game():
     bg = pygame.display.set_mode((SCREEN_W, SCREEN_H), pygame.SRCALPHA, 32)
     pygame.display.set_caption('Box Invasion')
     clock = pygame.time.Clock()
-    flags = {'up': False, 'down': False,'left': False,'right': False, 'mouse_loc': (), 'left_click': False, 'box_drag': False,
+    flags = {'up': False, 'down': False,'left': False,'right': False, 'mouse_loc': (),'right_click': False, 'left_click': False,
              'line_start': (), 'line_end': (), 'on_line': False}  # creating dictionary of flags for ease of access
     #NOTE: renamed left_click to box drag, now left click is generally used if left mouse is pressed
     mouse_loc, line_start, line_end = (), (), ()  # initalizing location variables
     font = pygame.font.Font(None, 38)
 
 
-    #new stuff
+    #Images
     gun = pygame.image.load("gunhr.png").convert_alpha()
-
-
+    char= pygame.image.load("char.png").convert_alpha()
+    char =  pygame.transform.scale(char, (36,36)) #scale beforehand
+    #New Stuff
     maxammo=30  #used for reloading with right click
     ammo=maxammo
     health=100
@@ -199,28 +205,20 @@ def game():
                     flags['left'] = False
                 elif event.key == pygame.K_d:
                     flags['right'] = False
+                elif event.key == pygame.K_r:
+                    ammo= maxammo #reload
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 3: #reload on right click
-                    ammo=maxammo
-
+                if event.button == 3:
+                    flags['right_click'] = True
                 elif event.button == 1:
                     flags['left_click'] = True
-                    shootpos = event.pos
-                    mouse_loc = event.pos  # store mouse location for line drawing (current end point)
-                    if big_box.surrounds(event.pos):
-                        flags['box_drag'] = True  # flag that allows for stuff that can only happen when left-clicking
-                        line_start = big_box.get_center()  # store box center for line drawing (starting point)
-                        flags['up'], flags['down'] = False, False  # set flags
+
 
             elif event.type == pygame.MOUSEBUTTONUP:
-                # only care here if left mouse button was clicked (held) previously
-                if event.button == 1 and flags['box_drag']:
-                    flags['box_drag'] = False  # no longer left-clicking since mouse button was released
-                    flags['on_line'] = True  # presumably box is moving "on the line" after releasing mouse button
-                    line_end = event.pos  # set final endpoint for the box as it moves along the path
-            # allows for updating the line in real time while still left-clicked
-            elif event.type == pygame.MOUSEMOTION and flags['box_drag']:
-                mouse_loc = event.pos  # update mouse position due to movement
+                if event.button == 3:
+                    flags['right_click'] = False
+            elif event.type == pygame.MOUSEMOTION:
+                shootpos = event.pos
 
         # makes the big (blue) box white while it's intersecting with the smaller (orange) box
 
@@ -255,10 +253,8 @@ def game():
             if rise_sign * big_box.get_center()[1] > rise_sign * (line_end[1]):
                 big_box.set_center(y=line_end[1])
                 flags['on_line'] = False
-        # allow W/S key to move only if the box isn't moving "on the line"
-        elif not flags['box_drag']:
-            big_box.increment_y(flags['up'] * -dy + flags['down'] * dy)
-            big_box.increment_x(flags['left'] * -dx + flags['right'] * dx)
+        big_box.increment_y(flags['up'] * -dy + flags['down'] * dy)
+        big_box.increment_x(flags['left'] * -dx + flags['right'] * dx)
         # move box back to 100% in the screen movement caused it to leave bounds
         big_box.check_out_of_bounds()
 
@@ -272,17 +268,23 @@ def game():
         tempgun = pygame.transform.scale(gun, (120,60))
         tempgun = pygame.transform.rotate(tempgun, -big_box.rotation);
 
-        if(flags['left_click'] and ammo>0):
+        if (flags['left_click']  and ammo > 0):
             shotalpha = 6
-            ammo-=1
+            ammo -= 1
+
+        if ( flags['right_click'] and ammo > 0 and shotalpha==0):
+            shotalpha = 6
+            ammo -= 1
 
         bg.blit(tempgun, (big_box.x-40, big_box.y-35))
+        if(shotalpha>5): #Initialize line position in the first frame of shooting
+            lStart = big_box.get_center()
+            lEnd = (shootpos[0] + random.randint(-5, 5), shootpos[1] + random.randint(-10, 10))  # add random spread
+
         if(shotalpha>0):
             shotalpha-=1
             colora = shotalpha/6
             #create line and raycast
-            lStart=big_box.get_center()
-            lEnd = (shootpos[0],shootpos[1])
             pygame.draw.line(bg, width=3,color = (240*colora,240*colora,0),start_pos=lStart, end_pos=lEnd)
 
             #check for collisions:
@@ -291,13 +293,12 @@ def game():
                     enemyList.remove(e)
                     score+=1
 
-        if flags['box_drag']:
-            big_box.resetMomentum()
-            pygame.draw.line(bg, (16, 132, 194), line_start, mouse_loc, width=2)
+
 
         # ENEMY LOGIC:
 
-        big_box.color = (16, 132, 194) # reset color, so that it can change if you take damage. Done before rendering
+        gothit=False #reset hit indicator
+
         #Iterate through enemies
         for e in enemyList:
 
@@ -315,7 +316,7 @@ def game():
                 e.damagecooldown-=1
 
             if(pygame.Rect(e.get_rect_params()).colliderect(big_box.get_rect_params()) and e.damagecooldown<1):
-                big_box.color = (255,0,0)
+                gothit=True
                 health-=10
 
                 e.damagecooldown=30
@@ -344,8 +345,9 @@ def game():
         health_surf = font.render(f'Health: {health}', True, (230, 230, 230))
         ammo_surf = font.render(f'Ammo: {ammo}/{maxammo}', True, (230, 230, 230))
 
-
-        pygame.draw.rect(bg, big_box.get_color(), big_box.get_rect_params())
+        if(gothit):
+            pygame.draw.ellipse(bg, rect=big_box.get_rect_params(), color=(200,0,0))
+        bg.blit(char, big_box.get_rect_params())
         bg.blit(score_surf, (((SCREEN_W / 2) - (score_surf.get_width() / 2)), 10))  # draws text in top center of screen
         bg.blit(health_surf, (((SCREEN_W / 2) - (health_surf.get_width() / 2) + health_surf.get_width()+20), 10))  # draws text in top center of screen
         bg.blit(ammo_surf, (((SCREEN_W / 2) - (ammo_surf.get_width() / 2) - health_surf.get_width()-40), 10))  # draws text in top center of screen
