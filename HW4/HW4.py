@@ -1,6 +1,8 @@
-# NAME:
-# FILENAME:
-# SUMMARY:
+# NAME: Misha Smirnov
+# FILENAME: HW4.py
+# SUMMARY: Added 3 new powerups: invincibility, lives, and size rest.
+# also added a new falling powerup that grants lives.
+# In addition, added high score system with file and a lives UI element.
 
 # vehicle assets from https://kenney.nl/assets/pixel-vehicle-pack
 # block assets from https://kenney.nl/assets/sokoban
@@ -21,6 +23,9 @@ class Vehicle(pygame.sprite.Sprite):
     A class for the player character (PC) sprite.
     """
 
+    lives = 1
+    size=1
+    invintime = 0 #how much time you are invincible. decrements by 1 each frame
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)  # this is a subclass of the pygame.sprite.Sprite class
         # lots of this is stuff required for the sprite class to do it sstuff
@@ -32,10 +37,12 @@ class Vehicle(pygame.sprite.Sprite):
         self.left = False  # boolean storing whether or not the vehicle is facing left or right
         self.dx = 6  # horizontal speed of car
 
+    grow_scale = 1.5  # amount to increase/decrease sprite size by
+
     def grow(self):
-        grow_scale = 1.5  # amount to increase/decrease sprite size by
-        new_w = self.rect.width * grow_scale
-        new_h = self.rect.height * grow_scale
+        self.size*=self.grow_scale
+        new_w = self.rect.width * self.grow_scale
+        new_h = self.rect.height * self.grow_scale
         old_w, old_x = self.rect.width, self.rect.x
         self.image = pygame.transform.scale(self.image, (new_w, new_h))
         self.rect = self.image.get_rect()
@@ -45,7 +52,20 @@ class Vehicle(pygame.sprite.Sprite):
     def increase_speed(self):
         self.dx += 4
 
+    def size_reset(self):
+
+        grow_scale = 1/(self.size)
+        self.size=1
+        new_w = self.rect.width * grow_scale
+        new_h = self.rect.height * grow_scale
+        old_w, old_x = self.rect.width, self.rect.x
+        self.image = pygame.transform.scale(self.image, (new_w, new_h))
+        self.rect = self.image.get_rect()
+        self.rect.x = old_x - 0.5 * (self.rect.width - new_w)  # need to adjust location so that it grows "in place"
+        self.rect.y = (SCREEN_H - 1) - self.rect.height  # need to adjust location so that it grows "in place"
     def update(self, pressed_keys):
+        if(self.invintime>0):
+            self.invintime-=1
         if pressed_keys[pygame.K_a]:  # returns 1 if 'a' key is pressed, 0 if not pressed
             self.rect.x -= self.dx
             if self.left is False:  # flips car sprite horizointally once if still facing right
@@ -75,6 +95,25 @@ class FallingBlock(pygame.sprite.Sprite):
         self.rect.x = randint(0, SCREEN_W - self.rect.width)  # randomly starts in random x position fully on screen
         self.rect.y = 0  # starts visible at top of screen
         self.dy = randint(3, 9)  # random integer vertical speed makes game more interesting
+
+    def update(self):
+        # checks if box is outside of screen, based on x and y (top-left corner coordinates of box)
+        self.rect.y += self.dy
+        if self.rect.y >= SCREEN_W - self.rect.height:  # removes object if it goes off screen
+            self.kill()  # removes object from lists, is no longer updated/drawn
+
+class FallingPower(pygame.sprite.Sprite):
+    """
+    A class for falling power ups that add lives
+    """
+
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(choice(glob(join('assets', 'diamonds', 'element_yellow_diamond_glossy.png'))))  # loads random block image
+        self.rect = self.image.get_rect()
+        self.rect.x = randint(0, SCREEN_W - self.rect.width)  # randomly starts in random x position fully on screen
+        self.rect.y = 0  # starts visible at top of screen
+        self.dy = randint(2, 6)  # random integer vertical speed makes game more interesting
 
     def update(self):
         # checks if box is outside of screen, based on x and y (top-left corner coordinates of box)
@@ -116,10 +155,20 @@ class PowerUp(pygame.sprite.Sprite):
     """
     A class for random power-up blocks that make the vehicle go slightly faster.
     """
-
+    ptype = 0 #integer that specifies what the power up does
+    # 0 = speed, 1 = invincibility, 2 = size reset, 3 = lives
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(join('assets', 'element_green_diamond_glossy.png'))
+        self.ptype = randint(0, 3)
+        #I love not having switch statements!!!! yipee!
+        if (self.ptype >= 0):
+            self.image = pygame.image.load(join('assets/diamonds', 'element_green_diamond_glossy.png'))
+        if (self.ptype == 1):
+            self.image = pygame.image.load(join('assets/diamonds', 'element_blue_diamond_glossy.png'))
+        if (self.ptype == 2):
+            self.image = pygame.image.load(join('assets/diamonds', 'element_red_diamond_glossy.png'))
+        if (self.ptype == 3):
+            self.image = pygame.image.load(join('assets/diamonds', 'element_yellow_diamond_glossy.png'))
         shrink_scale = 0.5
         smaller_w, smaller_h = int(self.image.get_width() * shrink_scale), int(self.image.get_height() * shrink_scale)
         self.image = pygame.transform.scale(self.image, (smaller_w, smaller_h))
@@ -145,11 +194,12 @@ def game():
     clock = pygame.time.Clock()
     pc = Vehicle()
     # dictionary of all sprite groups:
-    sprite_groups = {gp: pygame.sprite.Group() for gp in ['all', 'blocks', 'tools', 'powerups']}
+    sprite_groups = {gp: pygame.sprite.Group() for gp in ['all', 'blocks', 'tools', 'powerups', 'fallingpowerups']}
     # dictionary of helpul info on spawned objects (not player character)
     # info is current spawn timer, spawn timer max, constructor call, and pc function resulting from colliding w/object
     spawned_objects = {'blocks': [0, 1000, FallingBlock, "kill"], 'tools': [0, 750, LaunchedTool, "grow"],
-                       'powerups': [0, 3000, PowerUp, "increase_speed"]}
+                       'powerups': [0, 2500, PowerUp, "increase_speed"],
+                       'fallingpowerups': [0, 3200, FallingPower, "increase_lives"]}
     #
     sprite_groups['all'].add(pc)  # initially only player character sprite exists
     font = pygame.font.Font(None, 38)
@@ -172,6 +222,8 @@ def game():
                 sprite_groups[gp].add(new_obj)  # add it to its own specific sprite group
                 spawned_objects[gp][0] = 0  # reset spawn timer
 
+
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit()
@@ -186,22 +238,70 @@ def game():
         for gp in spawned_objects.keys():
             sprite_groups[gp].update()  # function updates all object in spawned object groups (blocks, tools, powerups)
             # TODO: need to check for object collisions!
+            # collision detection:
+
+            for go in sprite_groups[gp].sprites():
+                #collisions with blocks
+                if (not isinstance(go, FallingBlock)):
+                    for bl in sprite_groups['blocks'].sprites():
+                        if (pygame.sprite.collide_rect(go, bl)):
+                            go.kill()
+                #collisions with pc
+                if (pygame.sprite.collide_rect(pc, go)):
+                    if (isinstance(go,LaunchedTool)):
+                        pc.grow()
+                    if (isinstance(go,FallingBlock)):
+                        if(pc.invintime<=0):
+                            pc.lives -=1
+                            if(pc.lives <=0):
+                                pc.kill()
+                    if (isinstance(go,PowerUp)):
+                        if (go.ptype == 0):
+                            pc.increase_speed()
+                        if (go.ptype == 1):
+                            #invincibility
+                            pc.invintime+=30
+                        if (go.ptype == 2):
+                            # size reset
+                            pc.size_reset()
+                        if (go.ptype == 3):
+                            #add lives
+                            pc.lives+=1
+                    if (isinstance(go, FallingPower)):
+                        pc.lives += 1
+                    go.kill()
 
         if len(sprite_groups['powerups'].sprites()) > 3:  # removes oldest powerup if there are more than 3 on screen
             sprite_groups['powerups'].sprites()[0].kill()
 
         score_printout = font.render(f'Score: {time_score // 1000}', True, (230, 230, 230))
+        lives_printout = font.render(f'Lives: {pc.lives }', True, (230, 230, 230))
+
+        bg.blit(lives_printout, (5, 5))
         bg.blit(score_printout, (SCREEN_W - score_printout.get_width() - 5, 5))
         sprite_groups['all'].draw(bg)
 
         # GAME OVER screen
         if not pc.alive():  # only true if pc object is not in any groups, happens if pc.kill() is called
+            #high score functionality:
+            file = open("hs.txt")
+            hs = int(file.read())
+            if((time_score // 1000)>hs):
+                hs = time_score // 1000
+                file = open("hs.txt", "w")
+                file.write(str(hs))
+                file.close()
+
             bg.fill((0, 0, 0))  # make black screen
             game_over = font.render(f'GAME OVER', True, (230, 230, 230))
+            highscore= font.render(f'High Score: {hs}', True, (230, 230, 230))
+
             bg.blit(game_over, ((SCREEN_W / 2) - (game_over.get_width() / 2),
                                 (SCREEN_H / 2) - (game_over.get_height() / 2)))  # draws text in top center of screen
             bg.blit(score_printout, ((SCREEN_W / 2) - (score_printout.get_width() / 2),
                                      (SCREEN_H / 2) - (score_printout.get_height() / 2) + 100))
+            bg.blit(highscore, ((SCREEN_W / 2) - (highscore.get_width() / 2),
+                                     (SCREEN_H / 2) - (highscore.get_height() / 2) + 150))
             pygame.display.update()
             pygame.time.delay(3500)
             exit()
