@@ -260,7 +260,7 @@ def game():
                             pc.increase_speed()
                         if (go.ptype == 1):
                             #invincibility
-                            pc.invintime+=30
+                            pc.invintime+=150
                         if (go.ptype == 2):
                             # size reset
                             pc.size_reset()
