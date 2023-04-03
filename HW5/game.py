@@ -22,7 +22,7 @@ from textures import *
 
 def game():
     pygame.init()
-    # TODO: need to play background music!
+    pygame.mixer.music.play()
     disp_w, disp_h = (TILE_SIZE + 1) * GRID_W, (TILE_SIZE + 1) * GRID_H + SCORE_MARGIN
     # bg = pygame.display.set_mode((disp_w, disp_h), pygame.SRCALPHA, 32)
     bg = pygame.display.set_mode((disp_w, disp_h), pygame.SRCALPHA, 32)
@@ -83,7 +83,7 @@ def game():
             cheese_score += item.update(pc, time_inc)  # if cheese is picked up, give player 1 point
 
         if not pc.alive() and not DEBUG:  # end game screen if player is killed by cat
-            # TODO: Need to add game over music!  "game_over.ogg"
+            pygame.mixer.music.play(game_over)
             bg.fill((0, 0, 0))  # make black screen
             game_over = font.render(f'GAME OVER', True, (230, 230, 230))
             if cheese_score > best_score:  # short bit of code to save
