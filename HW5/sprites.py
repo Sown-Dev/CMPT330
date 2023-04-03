@@ -1,6 +1,7 @@
 # NAME:
 # FILENAME:
 # SUMMARY:
+import math
 
 import pygame
 from os.path import join
@@ -218,7 +219,6 @@ class Cat(pygame.sprite.Sprite):
         self.scared_waypoint = start_tile  # sets scared waypoint to starting waypoint bc it is in an extreme corner
         self.state_change = False  # allows for going backwards when state is changed
         self.waypoint_on_pause = None  # var for holding current waypoint when it is temporarily being replaced
-
 
     def load_animation_frames(self):
         """
@@ -454,21 +454,18 @@ class BrownCat(Cat):
         self.load_animation_frames()
         self.load_animation_masks()
         self.load_scared_frames()
-        self.refreshWP = self.waypoint # waypoint that refrehes
-        self.timeElapsed = 0 #tracks time elapsed for counting
+        self.refreshWP = self.waypoint  # waypoint that refrehes
+        self.timeElapsed = 0  # tracks time elapsed for counting
 
-    # TODO: Add code for orange cat!  Need to override check_waypoint like  BlackCat
-    #orange cat will move to a waypoint that updates to player position every 5 seconds
+    # orange cat will move to a waypoint that updates to player position every 5 seconds
 
     def check_waypoint(self, grid, mouse):
-        self.timeElapsed +=1;
-        if(self.timeElapsed>150): # 5 seconds = 150 frames
-            self.timeElapsed=0
-            self.refreshWP=  mouse.get_curr_tile()
+        self.timeElapsed += 1;
+        if (self.timeElapsed > 150):  # 5 seconds = 150 frames
+            self.timeElapsed = 0
+            self.refreshWP = mouse.get_curr_tile()
 
-        self.waypoint= self.refreshWP
-
-
+        self.waypoint = self.refreshWP
 
 
 class OrangeCat(Cat):
@@ -482,8 +479,15 @@ class OrangeCat(Cat):
         self.load_animation_masks()
         self.load_scared_frames()
 
-    # TODO: Add code for orange cat!  Need to override check_waypoint like  BlackCat
-    # def check_waypoint(self, grid, mouse):
+
+        # follows player if it is within 5 blocks of its position
+
+    def check_waypoint(self, grid, mouse):
+        distance = math.sqrt(self.curr_tile ^ 2 + mouse.get_curr_tile(). ^ 2)
+        if (distance < 5):
+            super().check_waypoint(grid, mouse)
+        else:
+            self.waypoint = mouse.get_curr_tile()
 
     # def update(self, grid, mouse, timer):
     #     super().update(grid, mouse, timer)  # calls base class update, remove if overriding
