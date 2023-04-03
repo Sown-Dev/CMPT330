@@ -390,7 +390,7 @@ class Cat(pygame.sprite.Sprite):
             self.image = self.image_hidden  # since it's "dead", make it invisible
             self.mask = pygame.mask.from_surface(self.image)  # readjust mask
             self.visible = False  # set visible flag to false
-            # TODO: Need to add cat defeat noise!
+            defeat_cat
         elif not DEBUG and self.visible and not self.scared and pygame.sprite.collide_mask(self, mouse):
             # if cat is visible and not scared and collides with the player, then PC is "killed" (game over)
             mouse.kill()
@@ -479,11 +479,10 @@ class OrangeCat(Cat):
         self.load_animation_masks()
         self.load_scared_frames()
 
-
         # follows player if it is within 5 blocks of its position
 
     def check_waypoint(self, grid, mouse):
-        distance = math.sqrt(self.curr_tile ^ 2 + mouse.get_curr_tile(). ^ 2)
+        distance = manhattan_dist(self.curr_tile.get_loc(), mouse.get_curr_tile().get_loc())
         if (distance < 5):
             super().check_waypoint(grid, mouse)
         else:
@@ -505,8 +504,17 @@ class WhiteCat(Cat):
         self.load_animation_masks()
         self.load_scared_frames()
 
-    # TODO: Add code for white cat!  Need to override check_waypoint like  BlackCat
-    # def check_waypoint(self, grid, mouse):
+        # follows mouse by going 5 blocks under its position (if possible)
+
+    def check_waypoint(self, grid, mouse):
+        toPos = list(mouse.get_curr_tile().get_loc())
+        toPos[1] +=5
+        #if out of bounds, use default waypoint
+        try:
+            self.waypoint = grid.get_tile(tuple(toPos))
+        except:
+            super().check_waypoint(grid,mouse)
+
 
     # def update(self, grid, mouse, timer):
     #     super().update(grid, mouse, timer)  # calls base class update, remove if overriding
@@ -545,7 +553,7 @@ class Cheese(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             self.visible = False
             ret_val += 1
-            # TODO: Need to add mouse eating noise!
+            mouse_eat
         if not self.visible:
             # if cheese is currently invisible, increment timer and become visible if enough time has passed
             self.refresh_timer += timer
@@ -584,7 +592,7 @@ class Dog(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             self.visible = False
             mouse.toggle_dog_active()
-            # TODO: Need to add dog bark sound effect!
+            dog_bark
         if not self.visible:
             self.refresh_timer += timer
             if self.refresh_timer > self.respawn_min:
