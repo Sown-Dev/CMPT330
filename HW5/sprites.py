@@ -35,6 +35,11 @@ class Mouse(pygame.sprite.Sprite):
         self.curr_tile = start_tile  # beginning current tile is start tile
         self.left_teleport = True  # weird boolean to help with teleport move
 
+        # new vars:
+        self.total_frames = 0
+        self.frame_timing_mod = 3
+        self.frame_num = 0
+
     def load_animation_frames(self):
         """
         Fills frames dictionary with lists of frames per movement direction
@@ -124,26 +129,35 @@ class Mouse(pygame.sprite.Sprite):
         :param timer: current time in game (from pygame)
         """
         self.move_left, self.move_right, self.move_up, self.move_down = False, False, False, False
+        self.total_frames = (self.total_frames + 1) % self.frame_timing_mod
+
+
         if pressed_keys[pygame.K_a]:
             self.move_left = True
-            self.image = self.frames['left'][1]
-            self.mask = self.masks['left'][1]
-            # TODO: add animation for moving to the left
+            self.image = self.frames['left'][self.frame_num]
+            self.mask = self.masks['left'][self.frame_num]
+            if (self.total_frames % self.frame_timing_mod) == 0:
+                self.frame_num = (self.frame_num + 1) % len(self.frames['left'])
+
         if pressed_keys[pygame.K_d]:
             self.move_right = True
-            self.image = self.frames['right'][1]
-            self.mask = self.masks['right'][1]
-            # TODO: add animation for moving to the right
+            self.image = self.frames['right'][self.frame_num]
+            self.mask = self.masks['right'][self.frame_num]
+            if (self.total_frames % self.frame_timing_mod) == 0:
+                self.frame_num = (self.frame_num + 1) % len(self.frames['right'])
         if pressed_keys[pygame.K_w]:
             self.move_up = True
-            self.image = self.frames['up'][1]
-            self.mask = self.masks['up'][1]
-            # TODO: add animation for moving upward
+            self.image = self.frames['up'][self.frame_num]
+            self.mask = self.masks['up'][self.frame_num]
+            if (self.total_frames % self.frame_timing_mod) == 0:
+                self.frame_num = (self.frame_num + 1) % len(self.frames['up'])
         if pressed_keys[pygame.K_s]:
             self.move_down = True
-            self.image = self.frames['down'][1]
-            self.mask = self.masks['down'][1]
-            # TODO: add animation for moving downward
+            self.image = self.frames['down'][self.frame_num]
+            self.mask = self.masks['down'][self.frame_num]
+            if (self.total_frames % self.frame_timing_mod) == 0:
+                self.frame_num = (self.frame_num + 1) % len(self.frames['down'])
+
         if DEBUG and pressed_keys[pygame.K_RETURN]:  # can force
             self.force_dog_active()
 
@@ -390,7 +404,7 @@ class Cat(pygame.sprite.Sprite):
             self.image = self.image_hidden  # since it's "dead", make it invisible
             self.mask = pygame.mask.from_surface(self.image)  # readjust mask
             self.visible = False  # set visible flag to false
-            defeat_cat
+            defeat_cat.play()
         elif not DEBUG and self.visible and not self.scared and pygame.sprite.collide_mask(self, mouse):
             # if cat is visible and not scared and collides with the player, then PC is "killed" (game over)
             mouse.kill()
@@ -508,13 +522,12 @@ class WhiteCat(Cat):
 
     def check_waypoint(self, grid, mouse):
         toPos = list(mouse.get_curr_tile().get_loc())
-        toPos[1] +=5
-        #if out of bounds, use default waypoint
+        toPos[1] += 5
+        # if out of bounds, use default waypoint
         try:
             self.waypoint = grid.get_tile(tuple(toPos))
         except:
-            super().check_waypoint(grid,mouse)
-
+            super().check_waypoint(grid, mouse)
 
     # def update(self, grid, mouse, timer):
     #     super().update(grid, mouse, timer)  # calls base class update, remove if overriding
@@ -553,7 +566,7 @@ class Cheese(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             self.visible = False
             ret_val += 1
-            mouse_eat
+            mouse_eat.play()
         if not self.visible:
             # if cheese is currently invisible, increment timer and become visible if enough time has passed
             self.refresh_timer += timer
@@ -592,7 +605,7 @@ class Dog(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             self.visible = False
             mouse.toggle_dog_active()
-            dog_bark
+            dog_bark.play()
         if not self.visible:
             self.refresh_timer += timer
             if self.refresh_timer > self.respawn_min:

@@ -36,6 +36,7 @@ DOG_RESPAWN_TIME = 30  # number of seconds for dog to respawn
 
 # loads in bmg but DOES NOT play it!  Playing should happen in game.py
 pygame.mixer.init()
+pygame.mixer.music.set_volume(0.05)
 pygame.mixer.music.load(join("assets", "bgm.wav"))
 
 # loads but DOES NOT play 3 requested sound effects

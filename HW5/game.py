@@ -83,7 +83,8 @@ def game():
             cheese_score += item.update(pc, time_inc)  # if cheese is picked up, give player 1 point
 
         if not pc.alive() and not DEBUG:  # end game screen if player is killed by cat
-            pygame.mixer.music.play(game_over)
+            pygame.mixer.music.load(join("assets", "game_over.ogg"))
+            pygame.mixer.music.play()
             bg.fill((0, 0, 0))  # make black screen
             game_over = font.render(f'GAME OVER', True, (230, 230, 230))
             if cheese_score > best_score:  # short bit of code to save
