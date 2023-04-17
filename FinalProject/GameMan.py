@@ -14,6 +14,8 @@ def game():
 
     ball = Ball(400,400, 4)
 
+    TimeRemaining=0
+    Score= (0,0)
 
     #Sprite Groups
     sprite_groups = {gp: pygame.sprite.Group() for gp in ['all', 'ball', 'bullets', 'pc', 'opp', 'col']}
@@ -46,6 +48,7 @@ def game():
         point = ball.update()
 
         if point:
+            Score[0 if point == 1 else 1]+=1
             ball.reset()
 
         sprite_groups['all'].draw(bg)  # drawing updated sprites on screen
