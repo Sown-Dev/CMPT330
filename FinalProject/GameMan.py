@@ -8,10 +8,11 @@ FPS=60
 
 def game():
     pygame.init()
-    pc = Paddle(True, False)
-    enemy = Paddle(False,True, (WIDTH,HEIGHT))
 
     bg = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SRCALPHA, 32)
+
+    pc = Paddle(True, False)
+    enemy = Paddle(False, True, (WIDTH-60, HEIGHT))
 
     ball = Ball(400,400, 4)
 

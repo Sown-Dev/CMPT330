@@ -27,26 +27,28 @@ class Paddle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = spawnPos[0]
         self.rect.y = spawnPos[1]
+        self.xPos = self.rect.x
+        self.yPos = self.rect.y
 
 
     def update(self, pressed_keys, ball):
         self.yPos += self.yVel * 0.2
-        self.yVel *= 0.9
+        self.yVel *= 0.95
 
         if(self.pControlled):
 
             if pressed_keys[pygame.K_w]:
-                self.yVel-=2
+                self.yVel-=2.2
             if pressed_keys[pygame.K_s]:
-                self.yVel+=2
+                self.yVel+=2.2
 
 
         else:
             #AI stuff
             if(ball.rect.y>self.yPos+10):
-                self.yVel+=2
+                self.yVel+=2.2
             if (ball.rect.y < self.yPos - 10):
-                self.yVel -= 2
+                self.yVel -= 2.2
 
 
         self.rect.x = int(self.xPos)
