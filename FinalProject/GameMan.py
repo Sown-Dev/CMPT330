@@ -15,6 +15,8 @@ def game():
 
     ball = Ball(400,400, 4)
 
+    TimeRemaining=0
+    Score= [0,0]
 
     #Sprite Groups
     sprite_groups = {gp: pygame.sprite.Group() for gp in ['all', 'ball', 'bullets', 'pc', 'enemy', 'col']}
@@ -28,6 +30,9 @@ def game():
     sprite_groups['pc'].add(pc)
 
     clock = pygame.time.Clock()
+
+    font = pygame.font.Font(None, 48)
+
 
 
     #Game Loop
@@ -54,12 +59,18 @@ def game():
         point = ball.update()
 
         if point:
+            Score[1 if point == 1 else 0]+=1
             ball.reset()
 
         sprite_groups['all'].draw(bg)  # drawing updated sprites on screen
-        pygame.display.update()
-        # updating screen
+        #draw score and time:
 
+        score_text = font.render(f'{Score[0]} - {Score[1]}', True, (230, 230, 230))
+        bg.blit(score_text, ((WIDTH / 2) - (score_text.get_width() / 2),
+                                 100))
+
+        # updating screen
+        pygame.display.update()
 
 
 
