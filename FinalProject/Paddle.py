@@ -12,8 +12,9 @@ class Paddle(pygame.sprite.Sprite):
     flipped=False
     yVel=0
 
-    def __init__(self, playerControlled ):
+    def __init__(self, playerControlled, isflipped, spawnPos=(0,0) ):
 
+        flipped = isflipped
         #call base
         pygame.sprite.Sprite.__init__(self)
 
@@ -21,14 +22,18 @@ class Paddle(pygame.sprite.Sprite):
         self.pControlled = playerControlled
 
         self.image = pygame.image.load(join('Assets/Sprites', 'paddle.png'))
+        self.image = pygame.transform.flip(self.image, flipped, False)
         self.mask = pygame.mask.from_surface(self.image)  # extracting mask for better collisions
         self.rect = self.image.get_rect()
+        self.rect.x = spawnPos[0]
+        self.rect.y = spawnPos[1]
 
 
-    def update(self, pressed_keys):
+    def update(self, pressed_keys, ball):
+        self.yPos += self.yVel * 0.2
+        self.yVel *= 0.9
+
         if(self.pControlled):
-            self.yPos += self.yVel*0.2
-            self.yVel*=0.9
 
             if pressed_keys[pygame.K_w]:
                 self.yVel-=2
@@ -36,8 +41,17 @@ class Paddle(pygame.sprite.Sprite):
                 self.yVel+=2
 
 
-            self.rect.x = int(self.xPos)
-            self.rect.y = int(self.yPos)
+        else:
+            #AI stuff
+            if(ball.rect.y>self.yPos+10):
+                self.yVel+=2
+            if (ball.rect.y < self.yPos - 10):
+                self.yVel -= 2
+
+
+        self.rect.x = int(self.xPos)
+        self.rect.y = int(self.yPos)
+
 
             
     def shoot(self):

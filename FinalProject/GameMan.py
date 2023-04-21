@@ -8,7 +8,8 @@ FPS=60
 
 def game():
     pygame.init()
-    pc = Paddle(True)
+    pc = Paddle(True, False)
+    enemy = Paddle(False,True, (WIDTH,HEIGHT))
 
     bg = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SRCALPHA, 32)
 
@@ -16,10 +17,14 @@ def game():
 
 
     #Sprite Groups
-    sprite_groups = {gp: pygame.sprite.Group() for gp in ['all', 'ball', 'bullets', 'pc', 'opp', 'col']}
+    sprite_groups = {gp: pygame.sprite.Group() for gp in ['all', 'ball', 'bullets', 'pc', 'enemy', 'col']}
     sprite_groups['all'].add(pc)
+    sprite_groups['all'].add(enemy)
     sprite_groups['all'].add(ball)
     sprite_groups['col'].add(pc)
+    sprite_groups['col'].add(enemy)
+    sprite_groups['enemy'].add(enemy)
+
     sprite_groups['pc'].add(pc)
 
     clock = pygame.time.Clock()
@@ -36,12 +41,15 @@ def game():
             if event.type == pygame.QUIT:
                 exit()
 
-        pc.update(pygame.key.get_pressed())  # update mouse based on keys, walls, and time
-
+        pc.update(pygame.key.get_pressed(),ball)  # update mouse based on keys, walls, and time
+        enemy.update(pygame.key.get_pressed(),ball)
         #check colliders
         for collider in sprite_groups['col']:
             if pygame.mask.Mask.overlap(ball.mask, collider.mask, offset(ball,collider)):
                 ball.hit()
+                if type(collider) is Paddle:
+                    print("test")
+                    ball.speed+=1
 
         point = ball.update()
 

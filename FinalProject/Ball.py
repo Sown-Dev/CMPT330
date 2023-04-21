@@ -63,5 +63,7 @@ class Ball(pygame.sprite.Sprite):
     def hit(self):
         self.xFac *= -1
 
+
+
     def getRect(self):
         return self.rect
