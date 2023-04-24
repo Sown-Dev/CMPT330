@@ -13,7 +13,7 @@ class Bullet(pygame.sprite.Sprite):
     yVel = 0
     xVel=0
 
-    def __init__(self, flipped):
+    def __init__(self, flipped, spawnPos ):
 
         # call base
         pygame.sprite.Sprite.__init__(self)
@@ -24,6 +24,11 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.flipped = flipped
         self.xVel = 80 if flipped else -80;
+
+        self.rect.x = spawnPos[0]
+        self.rect.y = spawnPos[1]
+        self.xPos = self.rect.x
+        self.yPos = self.rect.y
     def update(self):
         self.xPos = self.xVel*0.2
         self.xVel *=0.99

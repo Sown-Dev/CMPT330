@@ -1,4 +1,5 @@
 import math
+import random
 
 import pygame
 from os.path import join
@@ -6,6 +7,7 @@ from math import dist, inf
 from random import choice
 
 from FinalProject.Bullet import Bullet
+from FinalProject.Utils import WIDTH
 
 
 class Paddle(pygame.sprite.Sprite):
@@ -37,9 +39,11 @@ class Paddle(pygame.sprite.Sprite):
         #personal sprite groups:
         self.bullets = {pygame.sprite.Group()}
 
-    def update(self, pressed_keys, ball):
+    def update(self, pressed_keys, ball, bg):
         for b in self.bullets:
             b.update()
+
+        self.bullets.draw(bg)
 
 
         self.yPos += self.yVel * 0.2
@@ -58,12 +62,13 @@ class Paddle(pygame.sprite.Sprite):
 
         else:
             #AI stuff
-            if(ball.rect.y==self.yPos):
-                self.shoot()
-            if(ball.rect.y>self.yPos+10):
-                self.yVel+=2.2
-            if (ball.rect.y < self.yPos - 10):
-                self.yVel -= 2.2
+            if(random.random()< (abs(ball.rect.x-self.yPos)/WIDTH)+0.1):
+                if(ball.rect.y==self.yPos):
+                    self.shoot()
+                if(ball.rect.y>self.yPos+10):
+                    self.yVel+=2.4
+                if (ball.rect.y < self.yPos - 10):
+                    self.yVel -= 2.4
 
 
         self.rect.x = int(self.xPos)
@@ -72,7 +77,7 @@ class Paddle(pygame.sprite.Sprite):
 
             
     def shoot(self):
-        bul = Bullet(self.flipped)
+        bul = Bullet(self.flipped, (self.xPos,self.yPos))
         self.bullets.add(bul)
 
 

@@ -47,15 +47,14 @@ def game():
             if event.type == pygame.QUIT:
                 exit()
 
-        pc.update(pygame.key.get_pressed(),ball)  # update mouse based on keys, walls, and time
-        enemy.update(pygame.key.get_pressed(),ball)
+        pc.update(pygame.key.get_pressed(),ball, bg)  # update mouse based on keys, walls, and time
+        enemy.update(pygame.key.get_pressed(),ball, bg)
         #check colliders
         for collider in sprite_groups['col']:
             if pygame.mask.Mask.overlap(ball.mask, collider.mask, offset(ball,collider)):
                 ball.hit()
                 if type(collider) is Paddle:
-                    print("test")
-                    #ball.speed+=1
+                    ball.speed+=0.05
 
         point = ball.update()
 
