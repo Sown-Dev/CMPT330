@@ -5,6 +5,9 @@ from os.path import join
 from math import dist, inf
 from random import choice
 
+from FinalProject.Bullet import Bullet
+
+
 class Paddle(pygame.sprite.Sprite):
 
     yPos =0
@@ -31,7 +34,14 @@ class Paddle(pygame.sprite.Sprite):
         self.yPos = self.rect.y
 
 
+        #personal sprite groups:
+        self.bullets = {pygame.sprite.Group()}
+
     def update(self, pressed_keys, ball):
+        for b in self.bullets:
+            b.update()
+
+
         self.yPos += self.yVel * 0.2
         self.yVel *= 0.95
 
@@ -42,9 +52,14 @@ class Paddle(pygame.sprite.Sprite):
             if pressed_keys[pygame.K_s]:
                 self.yVel+=2.2
 
+            if pressed_keys[pygame.K_SPACE]:
+                self.shoot()
+
 
         else:
             #AI stuff
+            if(ball.rect.y==self.yPos):
+                self.shoot()
             if(ball.rect.y>self.yPos+10):
                 self.yVel+=2.2
             if (ball.rect.y < self.yPos - 10):
@@ -57,6 +72,7 @@ class Paddle(pygame.sprite.Sprite):
 
             
     def shoot(self):
-        print("bam!")
+        bul = Bullet(self.flipped)
+        self.bullets.add(bul)
 
 

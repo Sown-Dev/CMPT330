@@ -55,7 +55,7 @@ def game():
                 ball.hit()
                 if type(collider) is Paddle:
                     print("test")
-                    ball.speed+=1
+                    #ball.speed+=1
 
         point = ball.update()
 

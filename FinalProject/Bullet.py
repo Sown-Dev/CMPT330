@@ -11,18 +11,25 @@ class Bullet(pygame.sprite.Sprite):
     xPos = 0
     flipped = False
     yVel = 0
+    xVel=0
 
-    def __init__(self, playerControlled):
+    def __init__(self, flipped):
 
         # call base
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.image.load(join('Assets/Sprites', 'bullet.png'))
+        self.image = pygame.transform.flip(self.image, flipped, False)
         self.mask = pygame.mask.from_surface(self.image)  # extracting mask for better collisions
         self.rect = self.image.get_rect()
-
+        self.flipped = flipped
+        self.xVel = 80 if flipped else -80;
     def update(self):
-        self.yPos += self.yVel * 0.2
-        self.yVel *= 0.9
+        self.xPos = self.xVel*0.2
+        self.xVel *=0.99
+
+
+        self.rect.x = int(self.xPos)
+        self.rect.y = int(self.yPos)
 
 
