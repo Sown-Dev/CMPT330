@@ -30,7 +30,7 @@ class Bullet(pygame.sprite.Sprite):
         self.xPos = self.rect.x
         self.yPos = self.rect.y
     def update(self):
-        self.xPos = self.xVel*0.2
+        self.xPos += self.xVel*0.1
         self.xVel *=0.99
 
 

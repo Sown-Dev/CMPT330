@@ -1,13 +1,17 @@
 # Ball class
+from enum import Enum
 from os.path import join
 
 import pygame
 
 from FinalProject.Utils import *
 
-
+class Difficulty(Enum):
+    EASY = 1
+    MEDIUM = 2
+    HARD = 3
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, posx, posy,  speed):
+    def __init__(self, posx, posy,  speed, difficulty = Difficulty.EASY):
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.image.load(join('Assets/Sprites', 'ball.png'))
@@ -24,12 +28,14 @@ class Ball(pygame.sprite.Sprite):
         self.speed = speed
         self.xFac = 1
         self.yFac = -1
-
+        self.dif = difficulty
 
         self.firstTime = 1
 
 
     def update(self):
+        if(self.hitcooldown>0):
+            self.hitcooldown-=1
         self.posx += self.speed * self.xFac
         self.posy += self.speed * self.yFac
 
@@ -60,8 +66,12 @@ class Ball(pygame.sprite.Sprite):
         self.firstTime = 1
 
     # Used to reflect the ball along the X-axis
+
+    hitcooldown=0
     def hit(self):
-        self.xFac *= -1
+        if(self.hitcooldown<=0):
+            self.hitcooldown=10
+            self.xFac *= -1
 
 
 

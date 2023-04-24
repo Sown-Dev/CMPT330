@@ -7,7 +7,7 @@ from math import dist, inf
 from random import choice
 
 from FinalProject.Bullet import Bullet
-from FinalProject.Utils import WIDTH
+from FinalProject.Utils import WIDTH, HEIGHT
 
 
 class Paddle(pygame.sprite.Sprite):
@@ -37,7 +37,7 @@ class Paddle(pygame.sprite.Sprite):
 
 
         #personal sprite groups:
-        self.bullets = {pygame.sprite.Group()}
+        self.bullets = pygame.sprite.Group()
 
     def update(self, pressed_keys, ball, bg):
         for b in self.bullets:
@@ -70,9 +70,10 @@ class Paddle(pygame.sprite.Sprite):
                 if (ball.rect.y < self.yPos - 10):
                     self.yVel -= 2.4
 
+        self.yPos = max(0, min(self.yPos, HEIGHT-1))
 
-        self.rect.x = int(self.xPos)
-        self.rect.y = int(self.yPos)
+        self.rect.x = int(self.xPos) - self.image.get_width()/2
+        self.rect.y = int(self.yPos) - self.image.get_height()/2
 
 
             

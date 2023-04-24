@@ -11,8 +11,8 @@ def game():
 
     bg = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SRCALPHA, 32)
 
-    pc = Paddle(True, False)
-    enemy = Paddle(False, True, (WIDTH-60, HEIGHT))
+    pc = Paddle(True, False, (40,40))
+    enemy = Paddle(False, True, (WIDTH-40, HEIGHT-100))
 
     ball = Ball(400,400, 4)
 
@@ -39,6 +39,8 @@ def game():
     #Game Loop
     while True:
         bg.fill((0, 0, 0))
+        bg.blit(BGIMG, (0, 0))
+
         time_inc = clock.tick(FPS)  # guarantees up to 30 FPS
 
         for event in pygame.event.get():
