@@ -1,4 +1,5 @@
 import pygame
+import pymunk
 
 from FinalProject.Ball import *
 from FinalProject.Paddle import *
@@ -49,6 +50,11 @@ def game():
             if event.type == pygame.QUIT:
                 exit()
 
+
+        #physics step (before drawing)
+        pymunk.Space.step(1/FPS)
+
+
         pc.update(pygame.key.get_pressed(),ball, bg)  # update mouse based on keys, walls, and time
         enemy.update(pygame.key.get_pressed(),ball, bg)
         #check colliders
@@ -69,7 +75,7 @@ def game():
 
         score_text = font.render(f'{Score[0]} - {Score[1]}', True, (230, 230, 230))
         bg.blit(score_text, ((WIDTH / 2) - (score_text.get_width() / 2),
-                                 100))
+                                 10))
 
         # updating screen
         pygame.display.update()

@@ -70,7 +70,12 @@ class Paddle(pygame.sprite.Sprite):
                 if (ball.rect.y < self.yPos - 10):
                     self.yVel -= 2.4
 
-        self.yPos = max(0, min(self.yPos, HEIGHT-1))
+        if(self.yPos <20):
+            self.yPos=20
+            self.yVel*= -0.4
+        if(self.yPos >HEIGHT-20):
+            self.yPos = HEIGHT-20
+            self.yVel *=-0.4
 
         self.rect.x = int(self.xPos) - self.image.get_width()/2
         self.rect.y = int(self.yPos) - self.image.get_height()/2
