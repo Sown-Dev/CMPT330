@@ -23,7 +23,7 @@ class Bullet(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)  # extracting mask for better collisions
         self.rect = self.image.get_rect()
         self.flipped = flipped
-        self.xVel = 80 if flipped else -80;
+        self.xVel = -80 if flipped else 80;
 
         self.rect.x = spawnPos[0]
         self.rect.y = spawnPos[1]

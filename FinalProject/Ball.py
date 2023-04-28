@@ -1,8 +1,10 @@
 # Ball class
 from enum import Enum
 from os.path import join
+from random import random
 
 import pygame
+import pymunk
 
 from FinalProject.Utils import *
 
@@ -11,7 +13,21 @@ class Difficulty(Enum):
     MEDIUM = 2
     HARD = 3
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, posx, posy,  speed, difficulty = Difficulty.EASY):
+    def __init__(self, posx, posy,  speed,space, difficulty = Difficulty.EASY, ):
+
+        """
+        self.mass = 10
+        self.radius = 25
+        self.inertia = pymunk.moment_for_circle(self.mass, 0, self.radius, (0, 0))
+        self.body = pymunk.Body(self.mass, self.inertia)
+        self.body.position = self.x, 200
+        self.shape = pymunk.Circle(self.body, self.radius, (0, 0))
+        self.shape.elasticity = 0.95
+        self.shape.friction = 0.9
+        space.add(self.body, self.shape)
+        #_balls.append(self.shape)
+        """
+
         pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.image.load(join('Assets/Sprites', 'ball.png'))

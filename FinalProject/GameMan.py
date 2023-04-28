@@ -1,5 +1,9 @@
+from typing import List
+
 import pygame
 import pymunk
+import pymunk.pygame_util
+from pymunk.vec2d import Vec2d
 
 from FinalProject.Ball import *
 from FinalProject.Paddle import *
@@ -12,10 +16,33 @@ def game():
 
     bg = pygame.display.set_mode((WIDTH, HEIGHT), pygame.SRCALPHA, 32)
 
+    # Pymunk stuff:
+    space = pymunk.Space()
+    space.gravity = 0, 10
+
+    draw_options = pymunk.pygame_util.DrawOptions(bg)
+
+    static: List[pymunk.Shape] = [
+        pymunk.Segment(space.static_body, (0, 0), (0, HEIGHT), 5),
+        pymunk.Segment(space.static_body, (0, 0), (WIDTH, 0), 5),
+        pymunk.Segment(space.static_body, (0, HEIGHT), (WIDTH, HEIGHT), 5),
+        pymunk.Segment(space.static_body, (WIDTH, 0), (WIDTH, HEIGHT), 5),
+    ]
+
+    b2 = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
+    static.append(pymunk.Circle(b2, 30))
+    b2.position = 300, 200
+
+    for s in static:
+        s.friction = 1.0
+        s.group = 1
+    space.add(b2, *static)
+
+
     pc = Paddle(True, False, (40,40))
     enemy = Paddle(False, True, (WIDTH-40, HEIGHT-100))
 
-    ball = Ball(400,400, 4)
+    ball = Ball(400,400, 4,space)
 
     TimeRemaining=0
     Score= [0,0]
@@ -42,7 +69,10 @@ def game():
         bg.fill((0, 0, 0))
         bg.blit(BGIMG, (0, 0))
 
-        time_inc = clock.tick(FPS)  # guarantees up to 30 FPS
+        dt = 1.0 / FPS
+        space.step(dt)
+        clock.tick(FPS)
+
 
         for event in pygame.event.get():
 
@@ -51,8 +81,7 @@ def game():
                 exit()
 
 
-        #physics step (before drawing)
-        pymunk.Space.step(1/FPS)
+
 
 
         pc.update(pygame.key.get_pressed(),ball, bg)  # update mouse based on keys, walls, and time
@@ -79,6 +108,8 @@ def game():
 
         # updating screen
         pygame.display.update()
+        space.debug_draw(draw_options)
+
 
 
 
