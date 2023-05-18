@@ -8,6 +8,7 @@ from random import choice
 import pymunk
 
 from FinalProject.GameMan import offset
+from FinalProject.Utils import hit
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -54,6 +55,7 @@ class Bullet(pygame.sprite.Sprite):
 
        if (pygame.mask.Mask.overlap(ball.mask, self.mask, offset(ball,self))):
            self.timeLeft=4
+           hit.play()
 
 
 

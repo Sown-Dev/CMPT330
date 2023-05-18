@@ -9,7 +9,7 @@ from random import choice
 import pymunk
 
 from FinalProject.Bullet import Bullet
-from FinalProject.Utils import WIDTH, HEIGHT
+from FinalProject.Utils import WIDTH, HEIGHT, shoot
 
 
 class Paddle(pygame.sprite.Sprite):
@@ -86,9 +86,9 @@ class Paddle(pygame.sprite.Sprite):
                         self.shootdelay = 35
                         self.shoot(space)
                 if(ball.rect.y>self.yPos+10):
-                    self.yVel+=2.4
+                    self.yVel+=2.6
                 if (ball.rect.y < self.yPos - 10):
-                    self.yVel -= 2.4
+                    self.yVel -= 2.6
 
         if(self.yPos <20):
             self.yPos=20
@@ -104,6 +104,7 @@ class Paddle(pygame.sprite.Sprite):
         self.body.position = (self.xPos + (-24 if self.pControlled else 24), self.yPos)
 
     def shoot(self, space):
+        shoot.play()
         bul = Bullet(self.flipped, (self.xPos,self.yPos), space)
         self.bullets.add(bul)
 

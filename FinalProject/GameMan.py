@@ -74,54 +74,33 @@ def game():
     font = pygame.font.Font(None, 40)
 
 
+    gameState = 1 # 1 = playing, 2 = endscreen
+
+    #music
+    pygame.mixer.music.play()
+
 
     #Game Loop
     while True:
-        bg.fill((0, 0, 0))
-        bg.blit(BGIMG, (0, 0))
-
-
-        clock.tick(FPS)
-
-        TimeRemaining-=1
 
         for event in pygame.event.get():
-
-
             if event.type == pygame.QUIT:
                 exit()
 
 
+        bg.fill((0, 0, 0))
+
+        clock.tick(FPS)
+
+        if(gameState==1 and TimeRemaining<0):
+            gameState=2
+
+        if(gameState==1):
+            bg.blit(BGIMG, (0, 0))
 
 
 
-        pc.update(pygame.key.get_pressed(),ball, bg,space)  # update mouse based on keys, walls, and time
-        enemy.update(pygame.key.get_pressed(),ball, bg,space)
-
-
-        point = ball.update()
-
-        if point:
-            Score[1 if point == 1 else 0]+=1
-            ball.reset(point)
-        sprite_groups['all'].draw(bg)  # drawing updated sprites on screen
-        #draw score and time:
-
-
-        score_text = font.render(f'{Score[0]} - {Score[1]}', True, (230, 230, 230))
-        time_text = font.render(f'{(int) ((TimeRemaining/60) / 60)}:{(int) ((TimeRemaining/60) % 60)}', True, (230, 230, 230))
-
-        bg.blit(score_text, ((WIDTH / 2) - (score_text.get_width() / 2),
-                             2))
-        bg.blit(time_text, ((WIDTH / 2) - (time_text.get_width() / 2),
-                             25))
-
-        dt = 1.0 / FPS
-        space.step(dt)
-
-        # updating screen
-        pygame.display.update()
-        space.debug_draw(draw_options)
+            TimeRemaining-=1
 
 
 
@@ -129,13 +108,61 @@ def game():
 
 
 
+            pc.update(pygame.key.get_pressed(),ball, bg,space)  # update mouse based on keys, walls, and time
+            enemy.update(pygame.key.get_pressed(),ball, bg,space)
 
 
+            point = ball.update()
+
+            if point:
+                Score[1 if point == 1 else 0]+=1
+                ball.reset(point)
+            sprite_groups['all'].draw(bg)  # drawing updated sprites on screen
+            #draw score and time:
+
+
+            score_text = font.render(f'{Score[0]} - {Score[1]}', True, (230, 230, 230))
+            time_text = font.render(f'{(int) ((TimeRemaining/60) / 60)}:{(int) ((TimeRemaining/60) % 60)}', True, (230, 230, 230))
+
+            bg.blit(score_text, ((WIDTH / 2) - (score_text.get_width() / 2),
+                                 2))
+            bg.blit(time_text, ((WIDTH / 2) - (time_text.get_width() / 2),
+                                 25))
+
+            dt = 1.0 / FPS
+            space.step(dt)
+
+            # updating screen
+            pygame.display.update()
+            space.debug_draw(draw_options)
+
+        if(gameState==2):
+            pygame.mixer.music.load(join("Assets/Sounds", "Game Over.mp3"))
+            pygame.mixer.music.play()
+            #game end screen
+            if(Score[0]>Score[1]):
+                game_over = font.render(f'YOU WIN', True, (230, 230, 230))
+            elif(Score[0]<Score[1]):
+                game_over = font.render(f'YOU LOSE', True, (230, 230, 230))
+            elif(Score[0 == Score[1]]):
+                game_over = font.render(f'TIE GAME', True, (230, 230, 230))
+
+            finalScore = font.render(f'Final Score:\n{Score[0]} - {Score[1]}', True, (230, 230, 230))
+
+            bg.blit(game_over, ((WIDTH / 2) - (score_text.get_width() / 2),
+                                 200))
+            bg.blit(finalScore, ((WIDTH / 2) - (time_text.get_width() / 2),
+                                325))
+
+            pygame.display.update()
+            pygame.time.delay(4000)
+            exit()
 
 def offset(mask1, mask2):
     return int(mask2.rect.x - mask1.rect.x), int(mask2.rect.y - mask1.rect.y)
 def main():
     game()
+
 
 
 if __name__ == '__main__':
