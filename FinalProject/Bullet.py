@@ -5,6 +5,10 @@ from os.path import join
 from math import dist, inf
 from random import choice
 
+import pymunk
+
+from FinalProject.GameMan import offset
+
 
 class Bullet(pygame.sprite.Sprite):
     yPos = 0
@@ -13,7 +17,7 @@ class Bullet(pygame.sprite.Sprite):
     yVel = 0
     xVel=0
 
-    def __init__(self, flipped, spawnPos ):
+    def __init__(self, flipped, spawnPos , space):
 
         # call base
         pygame.sprite.Sprite.__init__(self)
@@ -29,12 +33,27 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.y = spawnPos[1]
         self.xPos = self.rect.x
         self.yPos = self.rect.y
-    def update(self):
-        self.xPos += self.xVel*0.1
-        self.xVel *=0.99
 
+        self.body = pymunk.Body(0.8, 100)
+        self.body.position = (self.xPos, self.yPos)
+        self.shape = pymunk.Circle(self.body, 3)
+        self.shape.elasticity = 1
+        self.shape.collision_type = 4
 
-        self.rect.x = int(self.xPos)
-        self.rect.y = int(self.yPos)
+        self.body.velocity = -320 if flipped else 320,0
+        space.add(self.body, self.shape)
+
+        self.timeLeft = 130 #120/30 = 4 seconds
+    def update(self,space, ball):
+       self.rect.x = self.body.position.x
+       self.rect.y= self.body.position.y
+       self.timeLeft -= 1
+       if(self.timeLeft==0):
+           space.remove(self.body, self.shape)
+           self.kill()
+
+       if (pygame.mask.Mask.overlap(ball.mask, self.mask, offset(ball,self))):
+           self.timeLeft=4
+
 
 

@@ -6,6 +6,8 @@ from os.path import join
 from math import dist, inf
 from random import choice
 
+import pymunk
+
 from FinalProject.Bullet import Bullet
 from FinalProject.Utils import WIDTH, HEIGHT
 
@@ -39,9 +41,21 @@ class Paddle(pygame.sprite.Sprite):
         #personal sprite groups:
         self.bullets = pygame.sprite.Group()
 
-    def update(self, pressed_keys, ball, bg):
+        self.shotLast = False
+
+        self.body = pymunk.Body(1000, 100)
+        self.body.position = (self.xPos, self.yPos)
+        self.shape = pymunk.Circle(self.body, 25)
+        self.shape.elasticity = 1
+        self.shape.collision_type = 3
+
+        self.shootdelay = 20
+
+    def update(self, pressed_keys, ball, bg, space):
+        self.shootdelay-=1
+
         for b in self.bullets:
-            b.update()
+            b.update(space,ball)
 
         self.bullets.draw(bg)
 
@@ -57,14 +71,20 @@ class Paddle(pygame.sprite.Sprite):
                 self.yVel+=2.2
 
             if pressed_keys[pygame.K_SPACE]:
-                self.shoot()
+                if(not self.shotLast and self.shootdelay<0):
+                    self.shootdelay = 30
+                    self.shoot(space)
+            else:
+                self.shotLast=False
 
 
         else:
             #AI stuff
             if(random.random()< (abs(ball.rect.x-self.yPos)/WIDTH)+0.1):
-                if(ball.rect.y==self.yPos):
-                    self.shoot()
+                if(ball.rect.y<self.yPos+8 and ball.rect.y>self.yPos-8):
+                    if(self.shootdelay<0):
+                        self.shootdelay = 35
+                        self.shoot(space)
                 if(ball.rect.y>self.yPos+10):
                     self.yVel+=2.4
                 if (ball.rect.y < self.yPos - 10):
@@ -80,10 +100,11 @@ class Paddle(pygame.sprite.Sprite):
         self.rect.x = int(self.xPos) - self.image.get_width()/2
         self.rect.y = int(self.yPos) - self.image.get_height()/2
 
+        # update body to current position
+        self.body.position = (self.xPos + (-24 if self.pControlled else 24), self.yPos)
 
-            
-    def shoot(self):
-        bul = Bullet(self.flipped, (self.xPos,self.yPos))
+    def shoot(self, space):
+        bul = Bullet(self.flipped, (self.xPos,self.yPos), space)
         self.bullets.add(bul)
 
 

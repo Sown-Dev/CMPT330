@@ -13,6 +13,10 @@ class Difficulty(Enum):
     MEDIUM = 2
     HARD = 3
 class Ball(pygame.sprite.Sprite):
+
+
+    body= pymunk.Body(1, 100)
+    shape = pymunk.Circle(body, 20)
     def __init__(self, posx, posy,  speed,space, difficulty = Difficulty.EASY, ):
 
         """
@@ -39,8 +43,6 @@ class Ball(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)  # extracting mask for better collisions
         self.rect = self.image.get_rect()
 
-        self.posx = posx
-        self.posy = posy
         self.speed = speed
         self.xFac = 1
         self.yFac = -1
@@ -48,15 +50,25 @@ class Ball(pygame.sprite.Sprite):
 
         self.firstTime = 1
 
+        self.body.position = (posx,posy)
+        self.shape = pymunk.Circle(self.body, 16)
+        self.shape.elasticity = 1
+        self.shape.collision_type = 3
+
+        self.reset(-1)
 
     def update(self):
-        if(self.hitcooldown>0):
-            self.hitcooldown-=1
-        self.posx += self.speed * self.xFac
-        self.posy += self.speed * self.yFac
 
-        self.rect.x = self.posx
-        self.rect.y = self.posy
+        """ Code for having constant speed
+        direction = self.body.velocity.normalized()
+        new_velocity = direction * (self.speed* 40)
+        self.body.velocity = new_velocity"""
+
+        self.posx = self.body.position[0]
+        self.posy= self.body.position[1]
+
+        self.rect.x = self.posx-self.image.get_width()/2
+        self.rect.y = self.posy-self.image.get_height()/2
 
         # If the ball hits the top or bottom surfaces,
         # then the sign of yFac is changed and it
@@ -65,21 +77,27 @@ class Ball(pygame.sprite.Sprite):
             self.yFac *= -1
 
         if self.posx <= -20 and self.firstTime:
-            self.firstTime = 0
             return 1
         elif self.posx >= WIDTH+20 and self.firstTime:
-            self.firstTime = 0
             return -1
         else:
             return 0
 
     # Used to reset the position of the ball
     # to the center of the screen
-    def reset(self):
+    def reset(self, point):
         self.posx = WIDTH // 2
         self.posy = HEIGHT // 2
-        self.xFac *= -1
-        self.firstTime = 1
+        self.body.position = (self.posx,self.posy)
+
+        self.body.velocity = (100, -100)
+
+        if(point == 1):
+            self.body.velocity = (100, -100)
+
+        if(point == -1):
+            self.body.velocity = (-100, -100)
+
 
     # Used to reflect the ball along the X-axis
 

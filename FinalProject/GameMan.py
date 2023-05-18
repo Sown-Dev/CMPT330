@@ -6,11 +6,12 @@ import pymunk.pygame_util
 from pymunk.vec2d import Vec2d
 
 from FinalProject.Ball import *
+from FinalProject.Entity import Entity
 from FinalProject.Paddle import *
 
 
 FPS=60
-
+TIMELIMIT = 60*2*FPS
 def game():
     pygame.init()
 
@@ -18,33 +19,43 @@ def game():
 
     # Pymunk stuff:
     space = pymunk.Space()
-    space.gravity = 0, 10
+    space.gravity = 0, 0
+    space.collision_slop = 0.5  # Adjust the collision slop
+    space.substeps = 10
+
+    # Create a collision handler instance
+    handler = space.add_collision_handler(3, 4)
+
+
 
     draw_options = pymunk.pygame_util.DrawOptions(bg)
 
     static: List[pymunk.Shape] = [
-        pymunk.Segment(space.static_body, (0, 0), (0, HEIGHT), 5),
-        pymunk.Segment(space.static_body, (0, 0), (WIDTH, 0), 5),
-        pymunk.Segment(space.static_body, (0, HEIGHT), (WIDTH, HEIGHT), 5),
-        pymunk.Segment(space.static_body, (WIDTH, 0), (WIDTH, HEIGHT), 5),
+        pymunk.Segment(space.static_body, (0, 0), (WIDTH, 0), 1),
+        pymunk.Segment(space.static_body, (0, HEIGHT), (WIDTH, HEIGHT), 1)
     ]
 
-    b2 = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
-    static.append(pymunk.Circle(b2, 30))
-    b2.position = 300, 200
+
 
     for s in static:
-        s.friction = 1.0
-        s.group = 1
-    space.add(b2, *static)
-
+        s.friction = 0
+        s.group = 0
+        s.elasticity= 1
+    space.add( *static)
+    #IDEA: Increase difficulty as time goes down
 
     pc = Paddle(True, False, (40,40))
+    space.add(pc.body, pc.shape)
+
     enemy = Paddle(False, True, (WIDTH-40, HEIGHT-100))
+    space.add(enemy.body, enemy.shape)
+
 
     ball = Ball(400,400, 4,space)
+    space.add(ball.body, ball.shape)
 
-    TimeRemaining=0
+
+    TimeRemaining=TIMELIMIT
     Score= [0,0]
 
     #Sprite Groups
@@ -60,7 +71,7 @@ def game():
 
     clock = pygame.time.Clock()
 
-    font = pygame.font.Font(None, 48)
+    font = pygame.font.Font(None, 40)
 
 
 
@@ -69,10 +80,10 @@ def game():
         bg.fill((0, 0, 0))
         bg.blit(BGIMG, (0, 0))
 
-        dt = 1.0 / FPS
-        space.step(dt)
+
         clock.tick(FPS)
 
+        TimeRemaining-=1
 
         for event in pygame.event.get():
 
@@ -84,27 +95,29 @@ def game():
 
 
 
-        pc.update(pygame.key.get_pressed(),ball, bg)  # update mouse based on keys, walls, and time
-        enemy.update(pygame.key.get_pressed(),ball, bg)
-        #check colliders
-        for collider in sprite_groups['col']:
-            if pygame.mask.Mask.overlap(ball.mask, collider.mask, offset(ball,collider)):
-                ball.hit()
-                if type(collider) is Paddle:
-                    ball.speed+=0.05
+        pc.update(pygame.key.get_pressed(),ball, bg,space)  # update mouse based on keys, walls, and time
+        enemy.update(pygame.key.get_pressed(),ball, bg,space)
+
 
         point = ball.update()
 
         if point:
             Score[1 if point == 1 else 0]+=1
-            ball.reset()
-
+            ball.reset(point)
         sprite_groups['all'].draw(bg)  # drawing updated sprites on screen
         #draw score and time:
 
+
         score_text = font.render(f'{Score[0]} - {Score[1]}', True, (230, 230, 230))
+        time_text = font.render(f'{(int) ((TimeRemaining/60) / 60)}:{(int) ((TimeRemaining/60) % 60)}', True, (230, 230, 230))
+
         bg.blit(score_text, ((WIDTH / 2) - (score_text.get_width() / 2),
-                                 10))
+                             2))
+        bg.blit(time_text, ((WIDTH / 2) - (time_text.get_width() / 2),
+                             25))
+
+        dt = 1.0 / FPS
+        space.step(dt)
 
         # updating screen
         pygame.display.update()
